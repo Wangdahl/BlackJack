@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Black Jack</title>
+
+    <link rel="stylesheet" href="./styles/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Black Jack</h1>
+    </header>
+
+    <!--Start game overlay-->
+    <aside id="start-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Black Jack</h2>
+            <label for="deckCount">Select number of decks:</label>
+            <input type="number" id="deckCount" min="1" max="8" value="1"/>
+            <label for="playerNameInput">Name:</label>
+            <input type="text" name="playerNameInput" id="playerNameInput" placeholder="Gambling Glenn">
+            <button id="startGameBtn">Start Game</button>
+        </div>
+    </aside>
+    <!--Game table-->
+    <main>
+        <div id="blackJackTable">
+
+            <h2>Computer´s hand</h2>
+            <div id="compCardsContainer"></div>
+            <p id="compSum-el"></p>
+
+            <h2 id="player-el">Players hand</h2>
+            <div id="playerCardsContainer"></div>
+            <p id="sum-el">Sum:</p>
+
+            <p id="message-el">Good Luck!</p>
+            <div class="controls">
+                <button id="newCardBtn">New Card</button>
+                <button id="holdBtn">Hold</button>
+            </div>
+        </div>
+    </main>
+    <!--Game ended overlay-->
+    <aside id="resultModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 id="resultTitle">The game has ended!</h2>
+            <p id="resultMessage"></p>
+            <button id="playAgainBtn">Play Again</button>
+        </div>
+    </aside>
+
+    <script type="module" src="./scripts/game.js"></script>
+</body>
+</html>

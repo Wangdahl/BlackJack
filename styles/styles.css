@@ -1,0 +1,77 @@
+body {
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-size: 20px;
+    color: white;
+    background-color: #006400;
+
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+h1 {
+    color: goldenrod;
+    font-size: 3rem;
+}
+
+button {
+    background-color: goldenrod;
+    color: #006400;
+    border: none;
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 2px;
+    margin: 5px;
+    width: 200px;
+}
+
+button:hover {
+    cursor: pointer;
+}
+
+button:active {
+    transform: scale(1.1);
+    transition: all 0.3s ease;
+}
+
+#blackJackTable {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Modal overlay styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7); /* Semi-transparent dark overlay */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Modal content styles */
+.modal-content {
+    background-color: #006400; /* Matching your main background, adjust if desired */
+    padding: 20px;
+    border: 2px solid goldenrod;
+    border-radius: 5px;
+    text-align: center;
+}
+
+/* Utility class to hide elements */
+.hidden {
+    display: none;
+}
