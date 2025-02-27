@@ -1,14 +1,19 @@
 
 import { initializeDeck, drawCards } from "./cardAPI.js";
 
-let sum = 0;
-let compSum = 0;
-let cards = [];
-let compCards = [];
-let hasBlackJack = false;
-let isAlive = false;
-let message = "";
-let player;
+//Game state object covering all game-related variables
+const gameState = {
+    sum: 0,
+    compSum: 0,
+    cards: [],
+    compCards: [],
+    hasBlackJack: false,
+    compBlackJack: false,
+    isAlive: false,
+    compAlive: false,
+    message: "",
+    playerName: "Gambling Glenn"
+};
 
 const messageElement = document.getElementById('message-el');
 const sumElement = document.getElementById('sum-el');
@@ -18,6 +23,8 @@ const compSumElement = document.getElementById('compSum-el');
 const compCardElement = document.getElementById('compCardsContainer');
 const startModal = document.getElementById('start-modal');
 const resultModal = document.getElementById('resultModal');
+
+// ---- HELPER FUNCTIONS ----
 
 // Updates the DOM with card images and values
 const renderCards = (cardsArray, container) => {
@@ -29,7 +36,7 @@ const renderCards = (cardsArray, container) => {
         img.style.height = '150px';
         container.appendChild(img);
     })
-}
+};
 // Converts the cards to Black Jack values
 const getCardValue = (card) => {
     //face cards (KING, QUEEN, JACK) have a value of 10
@@ -40,70 +47,125 @@ const getCardValue = (card) => {
     } else {
         return parseInt(card.value);
     }
-}
+};
+//Update the UI based on current game state
+const updateUI = () => {
+    renderCards(gameState.cards, cardElement);
+    renderCards(gameState.compCards, compCardElement);
+    sumElement.textContent = `Player sum: ${gameState.sum}`;
+    compSumElement.textContent = `Computer sum: ${gameState.compSum}`;
+
+    if(gameState.sum < 21 && gameState.compSum < 21 && 
+        !gameState.hasBlackJack && !gameState.compBlackJack) {
+            gameState.message = 'Do you want to draw another card?';
+    } 
+    messageElement.textContent = gameState.message;
+    if (gameState.sum > 21 || gameState.compSum > 21 || 
+        gameState.hasBlackJack || gameState.compBlackJack) {
+            determineWinner();
+    }
+};
+
+// Reset the game state for a new round
+const resetGameState = () => {
+    gameState.sum = 0;
+    gameState.compSum = 0;
+    gameState.cards = [];
+    gameState.compCards = [];
+    gameState.hasBlackJack = false;
+    gameState.compBlackJack = false;
+    gameState.isAlive = false;
+    gameState.compAlive = false;
+    gameState.message = "";
+};
+
+// ---- CORE GAME FUNCTIONALITY ----
+
 // Starts the game
 export async function startGame() {
-    player = document.getElementById('playerNameInput').value || 'Gambling Glenn';
-    isAlive = true;
-    hasBlackJack = false;
+    //Reseting to ensure clean start
+    resetGameState();
+    //Get players name from input
+    gameState.playerName = document.getElementById('playerNameInput').value || 'Gambling Glenn';
+    gameState.isAlive = true;
+    gameState.compAlive = true;
 
-    //Initialize the deck if needed
+    //Initialize the deck and draw cards
     await initializeDeck();
-
-    //Draw the players first two cards
+    //For player
     const playerDraw = await drawCards(2);
-    cards = playerDraw;
-    sum = cards.reduce((acc, card) => acc + getCardValue(card), 0);
-
-    //Draw the computers first two cards
-    const compDraw = await drawCards(2);
-    compCards = compDraw;
-    compSum = compCards.reduce((acc, card) => acc + getCardValue(card), 0);
-
-    renderGame();
-    playerElement.textContent = `${player}'s hand`;
-    startModal.classList.add('hidden');
-}
-
-//Renders messages and updates cards, sum and state of game
-function renderGame() {
-    //Render players cards
-    renderCards(cards, cardElement);
-    sumElement.textContent = `Player sum: ${sum}`;
-    //Render computer cards
-    renderCards(compCards, compCardElement);
-    compSumElement.textContent = `Computer sum: ${compSum}`;
-
-    //Update game message 
-    if(sum < 21) {
-        message = 'Do you want to draw a new card?';
-    } else if (sum === 21) {
-        message = 'You´ve got Black Jack!';
-        hasBlackJack = true;
-    } else if (sum > 21) {
-        message = 'You´re out of the game!';
-        isAlive = false;
+    gameState.cards = playerDraw;
+    gameState.sum = gameState.cards.reduce((acc, card) => acc + getCardValue(card), 0);
+    if (gameState.sum === 21) {
+        gameState.hasBlackJack = true;
+        gameState.message = "Black Jack!";
     }
+    //For computer
+    const compDraw = await drawCards(2);
+    gameState.compCards = compDraw;
+    gameState.compSum = gameState.compCards.reduce((acc, card) => acc + getCardValue(card), 0);
+    if (gameState.compSum === 21) {
+        gameState.compBlackJack = true;
+    }
+    //Updates the table
+    updateUI();
+    playerElement.textContent = `${gameState.playerName}'s hand`;
+    startModal.classList.add('hidden');
+};
 
-    messageElement.textContent = message;
-}
-
+// Draws new cards
 export async function newCard() {
-    if(isAlive && !hasBlackJack) {
+    if(gameState.isAlive && !gameState.hasBlackJack) {
         const cardDraw = await drawCards(1);
         if(cardDraw.length > 0) {
             const card = cardDraw[0];
-            cards.push(card);
-            sum += getCardValue(card);
-            renderGame();
+            gameState.cards.push(card);
+            gameState.sum += getCardValue(card);
+            if (gameState.sum === 21) {
+                gameState.hasBlackJack = true;
+                gameState.message = "Black Jack!";
+            }
+            updateUI();
         }
     }
+};
 
+export function determineWinner() {
+    let resultText = '';
+    if(gameState.sum > 21) {
+        resultText = 'You busted! Computer wins.';
+    } else if (gameState.hasBlackJack) {
+        resultText = 'You´ve got Black Jack! You win.';
+    } else if (gameState.compSum > 21) {
+        resultText = 'Computer busted! You win!';
+    } else if (gameState.compBlackJack) {
+        resultText = 'Computer´s got Black Jack! You lose.'
+    } else if (gameState.sum > gameState.compSum) {
+        resultText = 'You win!'
+    } else if (gameState.compSum > gameState.sum) {
+        resultText = 'Computer wins!'
+    } else {
+        resultText = 'It´s a draw! Usually that means house takes the money..'
+    }
+    //Setting result text
+    document.getElementById('resultMessage').textContent = resultText;
+    resultModal.classList.remove('hidden');
+};
+
+export function playAgain() {
+    //Hide score board and bring up new game board
+    resultModal.classList.add('hidden');
+    startModal.classList.remove('hidden');
+    resetGameState();
+    updateUI();
 }
 
+// -- Button event listeners
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('startGameBtn').addEventListener('click', startGame);
     document.getElementById('newCardBtn').addEventListener('click', newCard);
+    document.getElementById('holdBtn').addEventListener('click', determineWinner);
+    document.getElementById('playAgainBtn').addEventListener('click', playAgain);
 });
 
 
