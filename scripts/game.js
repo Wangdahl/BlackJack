@@ -141,7 +141,27 @@ export async function newCard() {
         }
     }
 };
+// Draws cards for computer.
+export async function compNewCard() {
+    if(gameState.isAlive && !gameState.hasBlackJack && 
+        gameState.compAlive && !gameState.compBlackJack) {
 
+            //Computer draws card until it´s sum is 17 or more
+            while (gameState.compSum < 17) {
+                const [card] = await drawCards(1);
+                gameState.compCards.push(card);
+                gameState.compSum = calculateHandSum(gameState.compCards);
+                //Check for Black Jack
+                if(gameState.compSum === 21) {
+                    gameState.compBlackJack = true;
+                    gameState.message = 'Computer has Black Jack, you loose!';
+                }
+                //Update the UI after each card is drawn.
+                updateUI();
+            }
+    }
+}
+//Determines the winner of the round.
 export function determineWinner() {
     let resultText = '';
     if(gameState.sum > 21) {
@@ -163,7 +183,14 @@ export function determineWinner() {
     document.getElementById('resultMessage').textContent = resultText;
     resultModal.classList.remove('hidden');
 };
-
+//Makes computer draw cards after player clicks hold and then determines round winner.
+export async function hold() {
+    //Computer draws cards
+    await compNewCard();
+    //Winner is determined
+    determineWinner();
+}
+//Restarts the game
 export function playAgain() {
     //Hide score board and bring up new game board
     resultModal.classList.add('hidden');
@@ -176,7 +203,7 @@ export function playAgain() {
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('startGameBtn').addEventListener('click', startGame);
     document.getElementById('newCardBtn').addEventListener('click', newCard);
-    document.getElementById('holdBtn').addEventListener('click', determineWinner);
+    document.getElementById('holdBtn').addEventListener('click', hold);
     document.getElementById('playAgainBtn').addEventListener('click', playAgain);
 });
 
