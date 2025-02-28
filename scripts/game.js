@@ -315,7 +315,7 @@ export function endGame() {
     if(gameState.cash > 0 && gameState.cash > gameState.startingCash) {
         resultMessage.textContent = `Your total winnings are $${gameState.cash - gameState.startingCash}!`
     } else if (gameState.cash > 0 && gameState.cash < gameState.startingCash) {
-        resultMessage.textContent = `Your total loss is $${gameState.cash - gameState.startingCash}...`
+        resultMessage.textContent = `Your total loss is $${gameState.startingCash - gameState.cash}...`
     } else {
         resultMessage.textContent = 'You´re out of cash, game over!'
     }
