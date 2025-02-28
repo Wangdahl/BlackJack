@@ -37,16 +37,28 @@ const renderCards = (cardsArray, container) => {
         container.appendChild(img);
     })
 };
-// Converts the cards to Black Jack values
-const getCardValue = (card) => {
-    //face cards (KING, QUEEN, JACK) have a value of 10
-    if(['KING', 'QUEEN', 'JACK'].includes(card.value)){
-        return 10;
-    } else if(card.value === 'ACE') {
-        return 11;
-    } else {
-        return parseInt(card.value);
+// Calculates the sum of total card value on hand.
+const calculateHandSum = (cards) => {
+    let sum = 0;
+    let aceCount = 0;
+    
+    cards.forEach(card => {
+        if(card.value === 'ACE') {
+            sum += 11;
+            aceCount++;
+        } else if (['KING', 'QUEEN', 'JACK'].includes(card.value)) {
+            sum += 10;
+        } else {
+            sum += parseInt(card.value);
+        }
+    });
+
+    while (sum > 21 && aceCount > 0) {
+        sum -= 10;
+        aceCount --;
     }
+
+    return sum;
 };
 //Update the UI based on current game state
 const updateUI = () => {
@@ -95,7 +107,7 @@ export async function startGame() {
     //For player
     const playerDraw = await drawCards(2);
     gameState.cards = playerDraw;
-    gameState.sum = gameState.cards.reduce((acc, card) => acc + getCardValue(card), 0);
+    gameState.sum = calculateHandSum(gameState.cards);
     if (gameState.sum === 21) {
         gameState.hasBlackJack = true;
         gameState.message = "Black Jack!";
@@ -103,7 +115,7 @@ export async function startGame() {
     //For computer
     const compDraw = await drawCards(2);
     gameState.compCards = compDraw;
-    gameState.compSum = gameState.compCards.reduce((acc, card) => acc + getCardValue(card), 0);
+    gameState.compSum = calculateHandSum(gameState.compCards);
     if (gameState.compSum === 21) {
         gameState.compBlackJack = true;
     }
@@ -120,7 +132,7 @@ export async function newCard() {
         if(cardDraw.length > 0) {
             const card = cardDraw[0];
             gameState.cards.push(card);
-            gameState.sum += getCardValue(card);
+            gameState.sum = calculateHandSum(gameState.cards);
             if (gameState.sum === 21) {
                 gameState.hasBlackJack = true;
                 gameState.message = "Black Jack!";
