@@ -126,6 +126,7 @@ export async function startGame() {
     gameState.isAlive = true;
     gameState.compAlive = true;
     gameState.cash = gameState.startingCash;
+    gameState.message = 'Place a bet to start the game!';
     //Initialize the deck
     const deckCount = document.getElementById('deckCount').value || 1;
     await initializeDeck(deckCount);
@@ -256,7 +257,7 @@ export function determineWinner() {
     if (gameState.sum > 21) {
         resultText = 'You busted!';
     } else if (gameState.hasBlackJack) {
-        resultText = 'Natural Blackjack! You win.';
+        resultText = 'Blackjack! You win.';
     } else if (gameState.compSum > 21) {
         resultText = 'Computer busted! You win.';
     } else if (gameState.compBlackJack) {
@@ -302,6 +303,7 @@ export function newRound() {
     if(gameState.cash > 0) {
         resetGameState();
         showBetControls();
+        gameState.message = 'Place a bet!'
         updateUI();
     } else {
         endGame();
