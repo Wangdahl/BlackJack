@@ -1,5 +1,5 @@
 
-import { initializeDeck, drawCards } from "./cardAPI.js";
+import { initializeDeck, drawFromLocalDeck } from "./cardAPI.js";
 
 //Game state object covering all game-related variables
 const gameState = {
@@ -24,7 +24,7 @@ const gameState = {
 const messageElement = document.getElementById('message-el');
 const sumElement = document.getElementById('sum-el');
 const cardElement = document.getElementById('playerCardsContainer');
-const playerElement = document.getElementById('player-el');
+
 const compSumElement = document.getElementById('compSum-el');
 const compCardElement = document.getElementById('compCardsContainer');
 const startModal = document.getElementById('start-modal');
@@ -91,12 +91,12 @@ const calculateHandSum = (cards) => {
 const updateUI = () => {
     renderCards(gameState.cards, cardElement);
     renderCards(gameState.compCards, compCardElement);
-    sumElement.textContent = `Player sum: ${gameState.sum}`;
-    compSumElement.textContent = `Computer sum: ${gameState.compSum}`;
+    sumElement.textContent = `${gameState.playerName}'s hand - Sum: ${gameState.sum}`;
+    compSumElement.textContent = `Computer's hand - Sum: ${gameState.compSum}`;
     cashDisplay.textContent = `Cash: $${gameState.cash}`;
     roundDisplay.textContent = `Rounds Played: ${gameState.roundsPlayed}`;
     if(gameState.sum < 21 && gameState.compSum < 21 && 
-        !gameState.hasBlackJack && !gameState.compBlackJack) {
+        !gameState.hasBlackJack && !gameState.compBlackJack && gameState.roundActive) {
             gameState.message = 'Do you want to draw another card?';
     } 
     messageElement.textContent = gameState.message;
@@ -123,16 +123,16 @@ export async function startGame() {
     resetGameState();
     //Get players name from input
     gameState.startingCash = cashInput.value;
-    gameState.playerName = document.getElementById('playerNameInput').value || 'Gambling Glenn';
     gameState.isAlive = true;
     gameState.compAlive = true;
     gameState.cash = gameState.startingCash;
     //Initialize the deck
-    await initializeDeck();
+    const deckCount = document.getElementById('deckCount').value || 1;
+    await initializeDeck(deckCount);
     
     //Updates the table
     updateUI();
-    playerElement.textContent = `${gameState.playerName}'s hand`;
+    sumElement.textContent = `${gameState.playerName}'s hand - Sum: ${gameState.sum}`;
     startModal.classList.add('hidden');
     showBetControls();
 };
@@ -163,7 +163,7 @@ export async function startRound() {
 
     //Deal two cards for each player:
     //For player
-    const playerDraw = await drawCards(2);
+    const playerDraw = drawFromLocalDeck(2);
     gameState.cards = playerDraw;
     gameState.sum = calculateHandSum(gameState.cards);
     if (gameState.sum === 21) {
@@ -172,7 +172,7 @@ export async function startRound() {
         determineWinner();
     }
     //For computer
-    const compDraw = await drawCards(2);
+    const compDraw = drawFromLocalDeck(2);
     gameState.compCards = compDraw;
     gameState.compSum = calculateHandSum(gameState.compCards);
     if (gameState.compSum === 21) {
@@ -181,14 +181,13 @@ export async function startRound() {
     }
     //Update UI
     updateUI();
-    playerElement.textContent = `${gameState.playerName}'s hand`;
     //Switch to play controls
     showPlayControls();
 }
 // Draws new cards
 export async function newCard() {
     if(gameState.isAlive && !gameState.hasBlackJack) {
-        const cardDraw = await drawCards(1);
+        const cardDraw = drawFromLocalDeck(1);
         if(cardDraw.length > 0) {
             const card = cardDraw[0];
             gameState.cards.push(card);
@@ -199,6 +198,7 @@ export async function newCard() {
                 updateUI();
             } else if (gameState.sum > 21) {
                 determineWinner();
+                updateUI();
             }
             updateUI();
         }
@@ -210,13 +210,14 @@ export async function compNewCard() {
         gameState.compAlive && !gameState.compBlackJack) {
             //Computer draws card until it´s sum is 17 or more
             while (gameState.compSum < 17) {
-                const [card] = await drawCards(1);
+                const [card] = drawFromLocalDeck(1);
                 gameState.compCards.push(card);
                 gameState.compSum = calculateHandSum(gameState.compCards);
                 //Check for Black Jack
                 if(gameState.compSum === 21) {
                     gameState.compBlackJack = true;
                     gameState.message = 'Computer has Black Jack, you loose!';
+                    determineWinner();
                 }
                 //Update the UI after each card is drawn.
             }
@@ -242,53 +243,60 @@ export async function hold() {
     // Let computer draw cards
     await compNewCard();
     //Determine round winner
-    await determineWinner();
+    determineWinner();
     gameState.roundsPlayed++;
     gameState.roundActive = false;
-    //Show end of rounc controls
-    showRoundControls();
+    //Update UI
     updateUI();
 }
 //Determines the winner of the round.
 export function determineWinner() {
-    console.log('Determine winner has been called.')
+    console.log('Determine winner has been called.');
     let resultText = '';
     if (gameState.sum > 21) {
         resultText = 'You busted!';
-        gameState.message = resultText;
     } else if (gameState.hasBlackJack) {
         resultText = 'Natural Blackjack! You win.';
-        gameState.message = resultText;
     } else if (gameState.compSum > 21) {
         resultText = 'Computer busted! You win.';
-        gameState.message = resultText;
     } else if (gameState.compBlackJack) {
-        resultText = 'Computer has Black Jack! You lose..';
-        gameState.message = resultText;
+        resultText = 'Computer has Black Jack! You lose.';
     } else if (gameState.sum > gameState.compSum) {
         resultText = 'You win!';
-        gameState.message = resultText;
     } else if (gameState.compSum > gameState.sum) {
         resultText = 'You lose!';
-        gameState.message = resultText;
     } else {
         resultText = 'It\'s a draw! Bet returned.';
-        gameState.message = resultText;
     }
+    gameState.message = resultText;
+    console.log('Result text:', resultText);
+
     // Process payouts
     if(resultText.includes('win')) {
         if(gameState.hasBlackJack && gameState.cards.length === 2) {
-            gameState.cash += Math.floor(gameState.bet * 1.5);
+            // Natural blackjack: return 1.5 × bet
+            gameState.cash += gameState.bet + Math.floor(gameState.bet * 1.5);
         } else {
+            // Regular win: 2 x bet
             gameState.cash += gameState.bet * 2;
         }
-    } else if (resultText.includes('draw')) {
+    } else if(resultText.includes('draw')) {
         gameState.cash += gameState.bet;
     }
+
+    // Update UI elements
     messageElement.textContent = gameState.message;
     roundDisplay.textContent = gameState.roundsPlayed;
-    cashDisplay.textContent = gameState.cash;
-};
+    cashDisplay.textContent = `Cash: $${gameState.cash}`;
+
+    // Switch controls: if cash remains, show round-end controls; otherwise, end game.
+    if(gameState.cash > 0) {
+        showRoundControls();
+    } else {
+        endGame();
+    }
+}
+
 // New round function checks for enough cash to continue
 export function newRound() {
     if(gameState.cash > 0) {
@@ -325,15 +333,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('startGameBtn').addEventListener('click', startGame);
     // In the bet controls:
     document.getElementById('placeBetBtn').addEventListener('click', placeBet);
-    
     // In the play controls:
     document.getElementById('hitBtn').addEventListener('click', newCard);
     document.getElementById('standBtn').addEventListener('click', hold);
     document.getElementById('doubleDownBtn').addEventListener('click', doubleDown);
-    
     // In the round-end controls:
     document.getElementById('newRoundBtn').addEventListener('click', newRound);
     document.getElementById('endGameBtn').addEventListener('click', endGame);
+    //Play again button
+    document.getElementById('playAgainBtn').addEventListener('click', playAgain);
 });
 
 

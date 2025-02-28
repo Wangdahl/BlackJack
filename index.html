@@ -10,11 +10,12 @@
 <body>
     <header>
         <h1>Black Jack</h1>
+        <p id="round-info"></p>
     </header>
 
     <!--Start game overlay-->
     <aside id="start-modal" class="modal-overlay">
-        <div class="modal-content">
+        <div class="modal-content" id="start-modal-content">
             <h2>Black Jack</h2>
             <label for="playerNameInput">Name:</label>
             <input type="text" name="playerNameInput" id="playerNameInput" placeholder="Gambling Glenn">
@@ -28,22 +29,21 @@
     <!--Game table-->
     <main>
         <div id="blackJackTable">
-
-            <h2>Computer´s hand</h2>
+            <!--Computer hand-->
+            <h2 id="compSum-el">Computer's hand</h2>
             <div id="compCardsContainer"></div>
-            <p id="compSum-el"></p>
-
-            <h2 id="player-el">Players hand</h2>
+            <!--Player hand-->
+            <h2 id="sum-el">Player's hand</h2>
             <div id="playerCardsContainer"></div>
-            <p id="sum-el">Sum:</p>
-
-            <p id="message-el">Good Luck!</p>
-            <p id="round-info"></p>
+            <!-- Message and round info -->
+            <div id="msg-div">
+                <p id="message-el">Good Luck!</p>
+            </div>
             <div id="controls-container">
                 <p id="cashDisplay"></p>
                 <!--Start of round betting controls-->
                 <div id="bet-controls">
-                    <label for="betInput">Make your bet:</label>
+                    <label for="betInput"></label>
                     <input type="number" id="betInput" min="1" value="10">
                     <button id="placeBetBtn">Place Bet</button>
                 </div>
@@ -64,7 +64,7 @@
     </main>
     <!--Game ended overlay-->
     <aside id="resultModal" class="modal-overlay hidden">
-        <div class="modal-content">
+        <div class="modal-content" id="result-modal-content">
             <h2 id="resultTitle">The game has ended!</h2>
             <p id="resultMessage"></p>
             <button id="playAgainBtn">Play Again</button>

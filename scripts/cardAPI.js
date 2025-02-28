@@ -1,37 +1,53 @@
-// API from https://deckofcardsapi.com/
+// cardAPI.js
 
-let deckId = null;
+// Local variable to store the full deck.
+let localDeck = [];
 
-// Fetches a new deck of cards from the API
-export async function initializeDeck() {
+/**
+ * initializeDeck(deckCount)
+ * - Calls the Deck of Cards API to create a new deck with the given deckCount.
+ * - Draws the entire deck (deckCount * 52 cards) and stores it in localDeck.
+ * - Returns the localDeck.
+ */
+export async function initializeDeck(deckCount = 1) {
     try {
-        const response = await fetch ('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1');
+        // Request a new shuffled deck with the specified deck count.
+        const response = await fetch(`https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=${deckCount}`);
         const data = await response.json();
-        deckId = data.deck_id;
-        return deckId;
+        const deckId = data.deck_id;
+        
+        // Calculate the total number of cards (deckCount * 52)
+        const totalCards = deckCount * 52;
+        
+        // Draw the entire deck from the API.
+        const drawResponse = await fetch(`https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=${totalCards}`);
+        const drawData = await drawResponse.json();
+        
+        if (drawData.success) {
+            localDeck = drawData.cards;
+            return localDeck;
+            } else {
+            console.error("Error drawing full deck", drawData);
+            throw new Error("Failed to draw full deck");
+        }
     } catch (error) {
-        console.error('Error intializing deck', error);
+        console.error("Error in initializeDeck:", error);
+        throw error;
     }
 }
 
-//Draw a given number of cards from the deck
-export async function drawCards(count = 1) {
-    try {
-        // Making sure there is a deck id available
-        if(!deckId) {
-            await initializeDeck();
-        }
-        const response = await fetch(`https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=${count}`);
-        const data = await response.json();
+/**
+ * drawFromLocalDeck(count)
+ * - Removes and returns the first 'count' cards from localDeck.
+ */
+export function drawFromLocalDeck(count = 1) {
+    return localDeck.splice(0, count);
+}
 
-        if(data.success) {
-            return data.cards; // Returns an array of card objects
-        } else {
-            console.error('Error drawing cards', data);
-            return [];
-        }
-    } catch (error) {
-        console.error('Error drawing cards', error);
-        return [];
-    }
+/**
+ * (Optional) getLocalDeck()
+ * - Returns the current localDeck (for debugging purposes).
+ */
+export function getLocalDeck() {
+    return localDeck;
 }
