@@ -16,7 +16,7 @@ main {
 
 h1 {
     color: goldenrod;
-    font-size: 3rem;
+    font-size: 2rem;
 }
 
 button {
@@ -74,4 +74,8 @@ button:active {
 /* Utility class to hide elements */
 .hidden {
     display: none;
+}
+#playerCardsContainer img,
+#compCardsContainer img {
+    margin: 5px;
 }

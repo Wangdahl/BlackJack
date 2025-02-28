@@ -16,10 +16,12 @@
     <aside id="start-modal" class="modal-overlay">
         <div class="modal-content">
             <h2>Black Jack</h2>
-            <label for="deckCount">Select number of decks:</label>
-            <input type="number" id="deckCount" min="1" max="8" value="1"/>
             <label for="playerNameInput">Name:</label>
             <input type="text" name="playerNameInput" id="playerNameInput" placeholder="Gambling Glenn">
+            <label for="start-cash">Set starting cash:</label>
+            <input type="number" id="start-cash" min="50" max="10000" value="100">
+            <label for="deckCount">Select number of decks:</label>
+            <input type="number" id="deckCount" min="1" max="8" value="1"/>
             <button id="startGameBtn">Start Game</button>
         </div>
     </aside>
@@ -36,9 +38,27 @@
             <p id="sum-el">Sum:</p>
 
             <p id="message-el">Good Luck!</p>
-            <div class="controls">
-                <button id="newCardBtn">New Card</button>
-                <button id="holdBtn">Hold</button>
+            <p id="round-info"></p>
+            <div id="controls-container">
+                <p id="cashDisplay"></p>
+                <!--Start of round betting controls-->
+                <div id="bet-controls">
+                    <label for="betInput">Make your bet:</label>
+                    <input type="number" id="betInput" min="1" value="10">
+                    <button id="placeBetBtn">Place Bet</button>
+                </div>
+                <!--Playing controls during round-->
+                <div id="play-controls" class="hidden">
+                    <button id="hitBtn">Hit</button>
+                    <button id="standBtn">Stand</button>
+                    <button id="doubleDownBtn">Double Down</button>
+                </div>
+                <!--End of round controls-->
+                <div id="round-controls" class="hidden">
+                    <button id="newRoundBtn">New Round</button>
+                    <button id="endGameBtn">End Game</button>
+                    <p id="roundInfo"></p>
+                </div>
             </div>
         </div>
     </main>
