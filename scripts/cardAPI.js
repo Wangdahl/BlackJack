@@ -1,13 +1,8 @@
-// cardAPI.js
-
-// Local variable to store the full deck.
-let localDeck = [];
 
 /**
  * initializeDeck(deckCount)
  * - Calls the Deck of Cards API to create a new deck with the given deckCount.
- * - Draws the entire deck (deckCount * 52 cards) and stores it in localDeck.
- * - Returns the localDeck.
+ * - Draws the entire deck (deckCount * 52 cards) and returns it.
  */
 export async function initializeDeck(deckCount = 1) {
     try {
@@ -21,26 +16,11 @@ export async function initializeDeck(deckCount = 1) {
             throw new Error("Failed to draw full deck");
         }
 
-        localDeck = data.cards;
-        return localDeck;
+        return { deck_id: data.deck_id, cards: data.cards };
     } catch (error) {
         console.error("Error in initializeDeck:", error);
         throw error;
     }
 }
 
-/**
- * drawFromLocalDeck(count)
- * - Removes and returns the first 'count' cards from localDeck.
- */
-export function drawFromLocalDeck(count = 1) {
-    return localDeck.splice(0, count);
-}
 
-/**
- * (Optional) getLocalDeck()
- * - Returns the current localDeck (for debugging purposes).
- */
-export function getLocalDeck() {
-    return localDeck;
-}

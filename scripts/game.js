@@ -1,9 +1,13 @@
 
-import { initializeDeck, drawFromLocalDeck } from "./cardAPI.js";
+import { initializeDeck } from "./cardAPI.js";
 
 //Game state object covering all game-related variables
 const gameState = {
-    deck: [],
+    deckState: {
+        localDeck: [],
+        usedCards: [],
+        deckId: null
+    },
     sum: 0,
     compSum: 0,
     cards: [],
@@ -106,6 +110,31 @@ const updateUI = () => {
     messageElement.textContent = gameState.message;
 };
 
+//Functions for reshuffling the deck
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i+1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function checkAndReshuffle() {
+    const {localDeck, usedCards} = gameState.deckState;
+    const totalCards = localDeck.length + usedCards.length;
+
+    // If there are no cards left at all, throw an error.
+    if (totalCards === 0) {
+        console.error("No cards remaining in deck.");
+        throw new Error("No cards remaining in deck. Please start a new game.");
+    }
+    if(usedCards.length >= 0.75 * totalCards) {
+        const combinedDeck = localDeck.concat(usedCards);
+        shuffleArray(combinedDeck);
+        gameState.deckState.localDeck = combinedDeck;
+        gameState.deckState.usedCards = [];
+    }
+}
+
 // Reset the game state for a new round
 const resetGameState = () => {
     gameState.sum = 0;
@@ -133,7 +162,10 @@ export async function startGame() {
     gameState.message = 'Place a bet to start the game!';
     //Initialize the deck
     const deckCount = document.getElementById('deckCount').value || 1;
-    await initializeDeck(deckCount);
+    const deckData = await initializeDeck(deckCount);
+    gameState.deckState.deckId = deckData.deck_id;
+    gameState.deckState.localDeck = deckData.cards;
+    gameState.deckState.usedCards = [];
     
     //Updates the table
     updateUI();
@@ -151,6 +183,26 @@ export function placeBet() {
     } else {
         alert("Invalid bet! Please enter a valid amount up to your available cash.");
     }
+}
+//Function for drawing cards
+function drawFromLocalDeck (count = 1) {
+    //Ensureing there are enough cards otherwise reshuffle
+    if(gameState.deckState.localDeck.length < count) {
+        console.log('Not enough cards, atempting reshuffle.')
+        checkAndReshuffle();
+    }
+    // If, after reshuffle, there still aren’t enough cards, throw an error.
+    if (gameState.deckState.localDeck.length < count) {
+        console.error("Deck is exhausted after reshuffle.");
+        throw new Error("Deck is exhausted. Please start a new game or reshuffle the deck manually.");
+    }
+    //Draw the first 'count' cards
+    const drawnCards = gameState.deckState.localDeck.splice(0, count);
+    //Add them to usedCards
+    gameState.deckState.usedCards.push(...drawnCards);
+    //Check if reshuffle is required
+    checkAndReshuffle();
+    return drawnCards;
 }
 // Function for starting a new game
 export async function startRound() {
@@ -187,6 +239,9 @@ export async function startRound() {
     //Update UI
     updateUI();
     //Switch to play controls
+    if (!gameState.hasBlackJack && !gameState.compBlackJack) {
+        showPlayControls();
+    }
 }
 // Draws new cards
 export async function newCard() {
