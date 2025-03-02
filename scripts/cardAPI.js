@@ -12,24 +12,17 @@ let localDeck = [];
 export async function initializeDeck(deckCount = 1) {
     try {
         // Request a new shuffled deck with the specified deck count.
-        const response = await fetch(`https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=${deckCount}`);
+        // Updated to call our Netlify Function proxy, which handles the external API call.
+        const response = await fetch(`/.netlify/functions/deck-proxy?deck_count=${deckCount}`);
         const data = await response.json();
-        const deckId = data.deck_id;
-        
-        // Calculate the total number of cards (deckCount * 52)
-        const totalCards = deckCount * 52;
-        
-        // Draw the entire deck from the API.
-        const drawResponse = await fetch(`https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=${totalCards}`);
-        const drawData = await drawResponse.json();
-        
-        if (drawData.success) {
-            localDeck = drawData.cards;
-            return localDeck;
-            } else {
-            console.error("Error drawing full deck", drawData);
+
+        if (!data.deck_id || !data.cards) {
+            console.error("Error drawing full deck", data);
             throw new Error("Failed to draw full deck");
         }
+
+        localDeck = data.cards;
+        return localDeck;
     } catch (error) {
         console.error("Error in initializeDeck:", error);
         throw error;

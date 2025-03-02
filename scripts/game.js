@@ -71,6 +71,10 @@ const calculateHandSum = (cards) => {
     let aceCount = 0;
     
     cards.forEach(card => {
+        if (!card) {
+            console.warn("Encountered an undefined card, skipping.");
+            return; // Skip this card if it's undefined
+        }
         if(card.value === 'ACE') {
             sum += 11;
             aceCount++;
@@ -183,7 +187,6 @@ export async function startRound() {
     //Update UI
     updateUI();
     //Switch to play controls
-    showPlayControls();
 }
 // Draws new cards
 export async function newCard() {
@@ -252,7 +255,6 @@ export async function hold() {
 }
 //Determines the winner of the round.
 export function determineWinner() {
-    console.log('Determine winner has been called.');
     let resultText = '';
     if (gameState.sum > 21) {
         resultText = 'You busted!';
@@ -270,7 +272,6 @@ export function determineWinner() {
         resultText = 'It\'s a draw! Bet returned.';
     }
     gameState.message = resultText;
-    console.log('Result text:', resultText);
 
     // Process payouts
     if(resultText.includes('win')) {

@@ -1,0 +1,23 @@
+{
+  "name": "blackjack",
+  "version": "1.0.0",
+  "description": "A web-based Blackjack game implemented using HTML, CSS, and JavaScript. This project features round-based gameplay with a betting system, multi-deck support, and local deck storage (loaded from the [Deck of Cards API](https://deckofcardsapi.com/)).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Wangdahl/BlackJack.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Wangdahl/BlackJack/issues"
+  },
+  "homepage": "https://github.com/Wangdahl/BlackJack#readme",
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
+}
