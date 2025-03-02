@@ -69,6 +69,7 @@ const showRoundControls = () => {
     playControls.classList.add('hidden');
     roundControls.classList.remove('hidden');
 }
+
 // Calculates the sum of total card value on hand.
 const calculateHandSum = (cards) => {
     let sum = 0;
@@ -152,6 +153,7 @@ const resetGameState = () => {
 
 // Starts the game
 export async function startGame() {
+    //Show loading spinner
     //Reseting to ensure clean start
     resetGameState();
     //Get players name from input
