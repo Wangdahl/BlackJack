@@ -27,10 +27,12 @@ A web-based Blackjack game implemented using HTML, CSS, and JavaScript. This pro
 ├── index.html         # Main HTML file
 ├── styles
 │   └── styles.css     # CSS styles for the game
-└── scripts
-    ├── game.js        # Game logic and state management
-    └── cardAPI.js     # API functions for loading the deck
-
+├── scripts
+│   ├── game.js        # Game logic and state management
+│   └── cardAPI.js     # API functions for loading the deck
+└── netlify
+    └── functions
+         └── deck-proxy.js 
 ## Installation and Running
 
 1. **Clone the repository:**
@@ -38,17 +40,26 @@ A web-based Blackjack game implemented using HTML, CSS, and JavaScript. This pro
        git clone https://github.com/yourusername/blackjack-game.git
        cd blackjack-game
 
-2. **Run a local web server:**
+2. **Install Dependencies:**
 
-       python -m http.server 5500
+   Ensure you have Node.js installed. Also install the Netlify CLI globally:
 
-   Or use an extension like Live Server in Visual Studio Code.
+       npm install -g netlify-cli
 
-3. **Open the game in your browser:**
+3. **Run Locally with Netlify Functions:**
 
-   Navigate to [http://127.0.0.1:5500](http://127.0.0.1:5500).
+   Use the Netlify CLI to run your project locally (this simulates your serverless functions):
+
+       netlify dev
+
+   This command starts a local development server (typically at `http://localhost:8888`) that serves both your static files and your Netlify Functions.
+
+4. **Open the Game in Your Browser:**
+
+   Navigate to the URL provided by Netlify CLI (e.g., [http://localhost:8888](http://localhost:8888)).
 
 ## How to Play
+
 
 1. **Start Game:**  
    - On the start screen, enter your name, select the number of decks, and set your starting cash.
@@ -68,9 +79,11 @@ A web-based Blackjack game implemented using HTML, CSS, and JavaScript. This pro
 
 ## Development
 
-- **Technologies:** HTML, CSS, JavaScript
-- **API:** [Deck of Cards API](https://deckofcardsapi.com/)
-- **Local Deck Handling:** All API calls are encapsulated in `cardAPI.js`. The full deck is loaded once at game start and stored locally, with subsequent rounds drawing cards from this local deck.
+- **Technologies:**  
+  HTML, CSS, JavaScript, Netlify Functions (serverless API proxy)
+
+- **API Handling:**  
+  The deck is fetched using a Netlify Function (`deck-proxy`) that combines deck creation and card drawing into one API call. The cardAPI.js module is stateless and solely responsible for this communication, while all deck state (available cards, used cards, deck ID) is managed in game.js. Automatic reshuffle logic is implemented to merge and shuffle used cards back into the deck when 75% of the deck has been played.
 
 ## Contributing
 
